@@ -31,7 +31,10 @@ class LSTMRegression(nn.Module):
     def forward(self, x):
         """ Take x in degrees """
         x, self.hidden = self.features(x, self.hidden)
-        x = F.relu(x)
+
+        # relu works better than sigmoid
+        # sigmoid promotes a monotonous values in prediction and results in more oscillation while training
+        x = F.sigmoid(x)
         x = self.linear(x)
         return x
 
@@ -41,13 +44,8 @@ class LSTMRegression(nn.Module):
 
 
 class FCRegression(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim, batch_size, num_layers=1):
+    def __init__(self, input_dim, batch_size):
         super(FCRegression, self).__init__()
-
-        # RNN Parameters
-        self.num_layers = num_layers
-        self.hidden_dim = hidden_dim
-        self.batch_size = batch_size
 
         # Can try other variants of the RNN as well.
         layer1_nodes = 128
@@ -56,7 +54,7 @@ class FCRegression(nn.Module):
         self.input = nn.Linear(input_dim, layer1_nodes)
         self.hidden1 = nn.Linear(layer1_nodes, layer2_nodes)
         self.hidden2 = nn.Linear(layer2_nodes, layer3_nodes)
-        self.regress = nn.Linear(layer3_nodes, output_dim)
+        self.regress = nn.Linear(layer3_nodes, 1)
 
     def forward(self, x):
         """ Take x in degrees """
@@ -69,8 +67,7 @@ class FCRegression(nn.Module):
         x = self.hidden2(x)
         x = torch.sigmoid(x)
 
-        x = F.relu(x)
-        x = self.linear(x)
+        x = self.regress(x)
         return x
 
 

@@ -18,9 +18,9 @@ class DataReader:
 
     def get_data(self):
         # returns datetime and power usage.
-        # have to represent datetime using lots of cosines.
+        # have to represent datetime using lots of cosines/sines/plain values
         # cosines of day, month, hour,
-        N = 5000
+        N = 2000
         X = self.df[self.df.columns[0]]
         Y = np.asarray(self.df[self.df.columns[1]][:N], dtype=np.float)
 
@@ -29,12 +29,7 @@ class DataReader:
         return X, Y
 
 
-@timeit
-def f1():
+if __name__ == '__main__':
     fname = "data/AEP_hourly.csv"
     datareader = DataReader(fname)
     X, Y = datareader.get_data()
-
-
-if __name__ == '__main__':
-    f1()
