@@ -42,8 +42,8 @@ if __name__ == '__main__':
     datareader = DataReader(fname)
     X, Y = datareader.get_data()
 
-    svm_lin = SVRRegression(kernel_type='linear')
-    error_lin = svm_lin.fit_predict(X, Y)
+    # svm_lin = SVRRegression(kernel_type='linear')
+    # error_lin = svm_lin.fit_predict(X, Y)
 
     svm_poly = SVRRegression(kernel_type='poly')
     error_poly = svm_poly.fit_predict(X, Y)
@@ -51,6 +51,6 @@ if __name__ == '__main__':
     svm_rbf = SVRRegression(kernel_type='rbf')
     error_rbf = svm_rbf.fit_predict(X, Y)
 
-    print(error_lin)
+    # print(error_lin)
     print(error_poly)
     print(error_rbf)

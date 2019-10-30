@@ -18,7 +18,7 @@ class DataReader:
         self.df = pd.DataFrame(pd.read_csv(self.fname))
         self.iter_count = 0
 
-        N = 25600
+        N = 2560
         X = self.df[self.df.columns[0]]
         self.Y = np.asarray(self.df[self.df.columns[1]][:N], dtype=np.float)
 
