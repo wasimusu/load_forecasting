@@ -7,11 +7,12 @@ This program shows demonstrates setting up a RNN / LSTM / GRU with the following
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 from networks import LSTMRegression, FCRegression
 from datareader import DataReader
+from datasets import RegressionDataset
+from sklearn.model_selection import train_test_split
 
 
 class Model:
@@ -23,7 +24,7 @@ class Model:
         self.bidirectional = bidirectional
         self.num_layers = num_layers
 
-    def train(self, data_iter):
+    def train(self, train_iter, test_iter):
         model = LSTMRegression(self.input_dim,
                                self.hidden_dim,
                                output_dim=1,
@@ -33,6 +34,8 @@ class Model:
 
         # model = FCRegression(self.input_dim, self.batch_size)
         print("Model : ", model)
+        print("Batch size : ", self.batch_size)
+        print("Hidden size : ", model.hidden[0].size())
         criterion = nn.MSELoss()
         optimizer = optim.SGD(params=model.parameters(), lr=self.lr)
 
@@ -41,11 +44,9 @@ class Model:
 
         for epoch in range(num_epoch):
             epoch_loss = 0
-            for i in range(len(data_iter)):
-                inputs, labels = data_iter.__next__()
-
-                inputs = torch.tensor(inputs).reshape(1, self.batch_size, -1).float()
-                labels = torch.tensor(labels).reshape(-1, 1).float()
+            for i, [inputs, labels] in enumerate(train_iter):
+                inputs = torch.tensor(inputs).float().unsqueeze(1)
+                labels = torch.tensor(labels).float()
                 output = model(inputs)
 
                 model.zero_grad()
@@ -55,25 +56,26 @@ class Model:
 
                 epoch_loss += loss
                 if i % 100 == 0:
-                    self.compute_loss(dataiter=data_iter, model=model, criterion=criterion)
+                    self.compute_loss(dataiter=test_iter, model=model, criterion=criterion)
                     break
 
     def compute_loss(self, dataiter, model, criterion):
         epoch_loss = 0
-        for j in range(len(dataiter)):
-            inputs, labels = dataiter.__next__()
-            inputs = torch.tensor(inputs).reshape(1, self.batch_size, -1).float()
-            labels = torch.tensor(labels).reshape(-1, 1).float()
+        for i, [inputs, labels] in enumerate(dataiter):
+            inputs = torch.tensor(inputs).float().unsqueeze(1)
+            labels = torch.tensor(labels).float()
 
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             epoch_loss += loss.item()
-            if j == 9: break
+
+            # We need the last data sample to generate some outputs and do manual evalutation
+            if i == len(dataiter) - 2: break
 
         print("Epoch Loss : {}".format("%.2f" % epoch_loss))
 
         inputs, labels = dataiter.__next__()
-        inputs = torch.tensor(inputs).reshape(1, self.batch_size, -1).float()
+        inputs = torch.tensor(inputs).float().unsqueeze(1)
         labels = torch.tensor(labels).reshape(-1, 1).float()
         with torch.no_grad():
             outputs = model(inputs)
@@ -101,8 +103,15 @@ if __name__ == '__main__':
                   lr=0.01)
 
     fname = "data/AEP_hourly.csv"
-    datareader = DataReader(fname, batch_size=batch_size)
-    for i in range(len(datareader)):
-        X, Y = datareader.__next__()
+    datareader = DataReader(fname)
+    X, Y = datareader.get_data()
+    trainX, testX, trainY, testY = train_test_split(X, Y, test_size=0.25)
+    del X, Y
 
-    model.train(datareader)
+    train_dataset = RegressionDataset(inputs=trainX, labels=trainY)
+    test_dataset = RegressionDataset(inputs=testX, labels=testY)
+
+    train_iter = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
+    test_iter = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
+
+    model.train(train_iter, test_iter)
