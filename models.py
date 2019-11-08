@@ -14,6 +14,8 @@ from datareader import DataReader
 from datasets import RegressionDataset
 from sklearn.model_selection import train_test_split
 
+import os
+
 
 class Model:
     def __init__(self, input_dim=1, num_layers=1, bidirectional=False, hidden_dim=512, batch_size=8, lr=0.005):
@@ -23,21 +25,32 @@ class Model:
         self.hidden_dim = hidden_dim
         self.bidirectional = bidirectional
         self.num_layers = num_layers
+        self.filename = "LSTM_hidden_dim-{}-num_layers-{}-dir-".format(hidden_dim, num_layers, bidirectional)
 
-    def train(self, train_iter, test_iter):
-        model = LSTMRegression(self.input_dim,
-                               self.hidden_dim,
-                               output_dim=1,
+    def train(self, train_iter, test_iter, reuse_model=False):
+        model = LSTMRegression(input_dim=self.input_dim,
+                               hidden_dim=self.hidden_dim,
                                batch_size=self.batch_size,
                                num_layers=self.num_layers,
+                               output_dim=1,
                                bidiectional=self.bidirectional)
+
+        model = FCRegression(input_dim=self.input_dim,
+                             batch_size=self.batch_size)
+
+        if reuse_model:
+            if os.path.exists(self.filename):
+                try:
+                    model.load_state_dict(torch.load(f=self.filename))
+                    print("Retraining saved models")
+                except:
+                    print("The saved model is not compatible. Starting afresh.")
 
         # model = FCRegression(self.input_dim, self.batch_size)
         print("Model : ", model)
         print("Batch size : ", self.batch_size)
-        print("Hidden size : ", model.hidden[0].size())
         criterion = nn.MSELoss()
-        optimizer = optim.SGD(params=model.parameters(), lr=self.lr)
+        optimizer = optim.SGD(params=model.parameters(), lr=self.lr, momentum=0.00, weight_decay=0.0)
 
         # Training parameters
         num_epoch = 100
@@ -55,32 +68,31 @@ class Model:
                 optimizer.step()
 
                 epoch_loss += loss
-                if i % 100 == 0:
-                    self.compute_loss(dataiter=test_iter, model=model, criterion=criterion)
-                    break
+
+            print(epoch, "Training loss : ", epoch_loss.item())
+            self.compute_loss(dataiter=test_iter, model=model, criterion=criterion)
+
+            # Save the model every ten epochs
+            if (epoch + 1) % 5 == 0:
+                torch.save(model.state_dict(), f=self.filename)
 
     def compute_loss(self, dataiter, model, criterion):
         epoch_loss = 0
         for i, [inputs, labels] in enumerate(dataiter):
             inputs = torch.tensor(inputs).float().unsqueeze(1)
             labels = torch.tensor(labels).float()
+            output = model(inputs)
 
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
+            loss = criterion(output, labels)
             epoch_loss += loss.item()
 
-            # We need the last data sample to generate some outputs and do manual evalutation
-            if i == len(dataiter) - 2: break
-
-        print("Epoch Loss : {}".format("%.2f" % epoch_loss))
-
-        inputs, labels = dataiter.__next__()
-        inputs = torch.tensor(inputs).float().unsqueeze(1)
-        labels = torch.tensor(labels).reshape(-1, 1).float()
-        with torch.no_grad():
-            outputs = model(inputs)
-            outputs = np.round(outputs.view(1, -1).detach().numpy(), 2)
-            print(np.round(labels, 2), '\n', outputs, '\n\n')
+            # Print epoch loss and do manual evalutation
+            if i == len(dataiter) - 1:
+                print("Epoch Loss : {}".format("%.2f" % epoch_loss))
+                with torch.no_grad():
+                    output = model(inputs)
+                    output = np.round(output.view(1, -1).detach().numpy(), 2)
+                    print(np.round(labels, 2), '\n', output, '\n\n')
 
     def predict(self):
         pass
@@ -89,18 +101,19 @@ class Model:
 if __name__ == '__main__':
     # Parameters of the model
     # You can change any of the parameters and expect the network to run without error
-    input_dim = 4
     num_layers = 1
     bidirectional = False
-    hidden_dim = 128  # 512 worked best so far
+    hidden_dim = 512  # 512 worked best so far
     batch_size = 8
+    learning_rate = 0.001
+    input_dim = 7
 
     model = Model(input_dim=input_dim,
                   num_layers=num_layers,
                   bidirectional=bidirectional,
                   hidden_dim=hidden_dim,
                   batch_size=batch_size,
-                  lr=0.01)
+                  lr=learning_rate)
 
     fname = "data/AEP_hourly.csv"
     datareader = DataReader(fname)
@@ -114,4 +127,4 @@ if __name__ == '__main__':
     train_iter = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
     test_iter = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
 
-    model.train(train_iter, test_iter)
+    model.train(train_iter, test_iter, reuse_model=True)

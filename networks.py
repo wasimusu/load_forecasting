@@ -8,8 +8,6 @@ This program shows demonstrates setting up a RNN / LSTM / GRU with the following
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-import numpy as np
 
 
 class LSTMRegression(nn.Module):
@@ -39,8 +37,8 @@ class LSTMRegression(nn.Module):
         return x
 
     def initHidden(self):
-        return (torch.zeros(self.num_directions * self.num_layers, self.batch_size, self.hidden_dim),
-                torch.zeros(self.num_directions * self.num_layers, self.batch_size, self.hidden_dim))
+        return (torch.zeros(self.num_directions * self.num_layers, 1, self.hidden_dim),
+                torch.zeros(self.num_directions * self.num_layers, 1, self.hidden_dim))
 
 
 class FCRegression(nn.Module):
@@ -51,22 +49,20 @@ class FCRegression(nn.Module):
         layer1_nodes = 128
         layer2_nodes = 256
         layer3_nodes = 64
-        self.input = nn.Linear(input_dim, layer1_nodes)
-        self.hidden1 = nn.Linear(layer1_nodes, layer2_nodes)
-        self.hidden2 = nn.Linear(layer2_nodes, layer3_nodes)
+
+        self.features = nn.Sequential(
+            nn.Linear(input_dim, layer1_nodes),
+            nn.Sigmoid(),
+            nn.Linear(layer1_nodes, layer2_nodes),
+            nn.Sigmoid(),
+            nn.Linear(layer2_nodes, layer3_nodes),
+            nn.Sigmoid(),
+        )
         self.regress = nn.Linear(layer3_nodes, 1)
 
     def forward(self, x):
-        """ Take x in degrees """
-        x = self.input(x)
-        x = torch.sigmoid(x)
-
-        x = self.hidden1(x)
-        x = torch.sigmoid(x)
-
-        x = self.hidden2(x)
-        x = torch.sigmoid(x)
-
+        """ Take x """
+        x = self.features(x)
         x = self.regress(x)
         return x
 
