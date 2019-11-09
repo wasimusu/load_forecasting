@@ -16,6 +16,45 @@ from sklearn.model_selection import train_test_split
 
 import os
 
+import torch.nn.functional as F
+
+
+def generate_data(N, sigma):
+    """ Generate data with given number of points N and sigma """
+    noise = np.random.normal(0, sigma, N)
+    X = np.random.uniform(0, 3, N)
+    Y = 2 * X ** 2 + 3 * X + 1 + noise  # arbitrary function
+    X = X.reshape(-1, 1)
+    print(X.shape)
+    return X, Y
+
+
+class Regression(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim, batch_size, num_layers=1, bidiectional=False):
+        super(Regression, self).__init__()
+
+        # RNN Parameters
+        self.num_layers = num_layers
+        self.num_directions = 2 if bidiectional else 1
+        self.hidden_dim = hidden_dim
+        self.batch_size = batch_size
+
+        self.features = nn.LSTM(input_dim, hidden_dim, bidirectional=bidiectional, num_layers=num_layers)
+        self.linear = nn.Linear(hidden_dim * self.num_directions, output_dim)
+
+        self.hidden = self.initHidden()
+
+    def forward(self, x):
+        """ Take x in degrees """
+        x, self.hidden = self.features(x, self.hidden)
+        x = F.relu(x)
+        x = self.linear(x)
+        return x
+
+    def initHidden(self):
+        return (torch.zeros(self.num_directions * self.num_layers, 1, self.hidden_dim),
+                torch.zeros(self.num_directions * self.num_layers, 1, self.hidden_dim))
+
 
 class Model:
     def __init__(self, input_dim=1, num_layers=1, bidirectional=False, hidden_dim=512, batch_size=8, lr=0.005):
@@ -37,6 +76,13 @@ class Model:
 
         model = FCRegression(input_dim=self.input_dim,
                              batch_size=self.batch_size)
+
+        model = Regression(input_dim=self.input_dim,
+                           hidden_dim=self.hidden_dim,
+                           output_dim=1,
+                           batch_size=self.batch_size,
+                           num_layers=self.num_layers,
+                           bidiectional=self.bidirectional)
 
         if reuse_model:
             if os.path.exists(self.filename):
@@ -90,9 +136,9 @@ class Model:
             if i == len(dataiter) - 1:
                 print("Epoch Loss : {}".format("%.2f" % epoch_loss))
                 with torch.no_grad():
-                    output = model(inputs)
+                    output = model(inputs)[:8]
                     output = np.round(output.view(1, -1).detach().numpy(), 2)
-                    print(np.round(labels, 2), '\n', output, '\n\n')
+                    print(np.round(labels[:8], 2), '\n', output, '\n\n')
 
     def predict(self):
         pass
@@ -105,8 +151,8 @@ if __name__ == '__main__':
     bidirectional = False
     hidden_dim = 512  # 512 worked best so far
     batch_size = 8
-    learning_rate = 0.001
-    input_dim = 7
+    learning_rate = 0.005
+    input_dim = 1
 
     model = Model(input_dim=input_dim,
                   num_layers=num_layers,
@@ -116,8 +162,9 @@ if __name__ == '__main__':
                   lr=learning_rate)
 
     fname = "data/AEP_hourly.csv"
-    datareader = DataReader(fname)
-    X, Y = datareader.get_data()
+    # datareader = DataReader(fname)
+    # X, Y = datareader.get_data()
+    X, Y = generate_data(128 * 8, 1)
     trainX, testX, trainY, testY = train_test_split(X, Y, test_size=0.25)
     del X, Y
 
