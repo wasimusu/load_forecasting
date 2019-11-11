@@ -77,12 +77,12 @@ class Model:
         model = FCRegression(input_dim=self.input_dim,
                              batch_size=self.batch_size)
 
-        model = Regression(input_dim=self.input_dim,
-                           hidden_dim=self.hidden_dim,
-                           output_dim=1,
-                           batch_size=self.batch_size,
-                           num_layers=self.num_layers,
-                           bidiectional=self.bidirectional)
+        # model = Regression(input_dim=self.input_dim,
+        #                    hidden_dim=self.hidden_dim,
+        #                    output_dim=1,
+        #                    batch_size=self.batch_size,
+        #                    num_layers=self.num_layers,
+        #                    bidiectional=self.bidirectional)
 
         if reuse_model:
             if os.path.exists(self.filename):
@@ -151,7 +151,7 @@ if __name__ == '__main__':
     bidirectional = False
     hidden_dim = 512  # 512 worked best so far
     batch_size = 8
-    learning_rate = 0.005
+    learning_rate = 0.01
     input_dim = 1
 
     model = Model(input_dim=input_dim,
@@ -164,7 +164,7 @@ if __name__ == '__main__':
     fname = "data/AEP_hourly.csv"
     # datareader = DataReader(fname)
     # X, Y = datareader.get_data()
-    X, Y = generate_data(128 * 8, 1)
+    X, Y = generate_data(64 * 8, 1)
     trainX, testX, trainY, testY = train_test_split(X, Y, test_size=0.25)
     del X, Y
 
