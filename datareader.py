@@ -3,11 +3,13 @@ import os
 from datarepr import repr_date
 import numpy as np
 import datetime
-from utils import timeit
 
 
 class DataReader:
-    def __init__(self, fname, batch_size=8):
+    def __init__(self, fname, batch_size=8, encoding='Plain', sample_size=64 * 40):
+        """
+        :param encoding: Sine, Cosine, Pair(Sine, Cosine), Plain
+        """
         self.fname = fname
         self.batch_size = batch_size
 
@@ -18,11 +20,11 @@ class DataReader:
         self.df = pd.DataFrame(pd.read_csv(self.fname))
         self.iter_count = 0
 
-        N = 256000
+        N = sample_size
         X = self.df[self.df.columns[0]]
         self.Y = np.asarray(self.df[self.df.columns[1]][:N], dtype=np.float)
 
-        X = [repr_date(date) for date in X[:N]]
+        X = [repr_date(date, type=encoding) for date in X[:N]]
         self.X = np.asarray(X)
 
         self.num_batches = len(self.Y) // self.batch_size

@@ -28,6 +28,12 @@ class DataRepresentation:
 
 
 def repr_date(date, type='Pair'):
+    date = parser.parse(date)
+    year = date.year
+    month = date.month
+    day = date.day
+    hour = date.hour
+
     # Sine representation
     if type == 'Sine':
         func = math.sin
@@ -41,14 +47,11 @@ def repr_date(date, type='Pair'):
         ca, cb, cc, _ = repr_date(date, 'Cosine')
         return [sa, ca, sb, cb, sc, cc, d]
 
+    elif type == "Plain":
+        return [year, month, day, hour]
+
     else:
         raise ValueError("Supported representations : Sine, Cosine, Pair. Input : {}".format(type))
-
-    date = parser.parse(date)
-    year = date.year
-    month = date.month
-    day = date.day
-    hour = date.hour
 
     month = DataRepresentation.repr_month(month, func)
     day = DataRepresentation.repr_day(day, func)

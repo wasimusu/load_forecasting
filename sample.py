@@ -55,7 +55,7 @@ num_layers = 1
 bidirectional = False
 hidden_dim = 80
 output_dim = 1
-batch_size = 8
+batch_size = 32
 
 model = Regression(input_dim,
                    hidden_dim,
@@ -74,7 +74,9 @@ for epoch in range(num_epoch):
     inputs, labels = generate_data(N=batch_size, sigma=1)
     inputs = torch.tensor(inputs).reshape(-1, 1).float().unsqueeze(0)
     labels = torch.tensor(labels).reshape(-1, 1).float()
-
+    print(inputs.size(), labels.size())
+    print(model)
+    break
     output = model(inputs)
 
     model.zero_grad()
@@ -93,12 +95,12 @@ for epoch in range(num_epoch):
             outputs = model(inputs)
             inputs = torch.tensor([input]).reshape(-1, 1).float().unsqueeze(0)
             outputs = np.round(outputs.view(1, -1).detach().numpy(), 2)
-            print(np.round(input, 2), '\n',
-                  np.round(labels, 2), '\n', outputs, '\n\n')
+            print(np.round(input[:8], 2), '\n',
+                  np.round(labels[:8], 2), '\n', outputs[:8], '\n\n')
 
             if epoch == 900:
                 plt.title("Scatterplot between output and predicted output")
                 plt.scatter(labels, outputs)
                 plt.ylabel('Predicted Y')
-                plt.xlabel('Y')
+                plt.xlabel('Y ( Y = 2 * X ** 2 + 3 * X + 1 + noise )')
                 plt.show()
