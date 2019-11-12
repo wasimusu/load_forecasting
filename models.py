@@ -159,6 +159,8 @@ if __name__ == '__main__':
 
     # X, Y = generate_data(batch_size * 8, 1)
 
+    # Worst convergence after using Plain encoding.
+    # Sine encoding :
     fname = "data/AEP_hourly.csv"
     datareader = DataReader(fname, encoding='Sine', sample_size=batch_size * 124)
     X, Y = datareader.get_data()
