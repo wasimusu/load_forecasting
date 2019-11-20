@@ -29,6 +29,23 @@ def generate_data(N, sigma):
     return X, Y
 
 
+def generate_multi_attr_data(N, sigma):
+    """
+    :param N: Number of data samples
+    :param sigma: standard deviation
+    :return: X, Y
+    """
+    noise = np.random.normal(0, sigma, N)
+    A = np.random.uniform(low=0, high=3, size=N)
+    B = np.random.uniform(low=0, high=30, size=N)
+    C = np.random.uniform(low=0, high=300, size=N)
+    Y = 2 * A + 3 * B + 4 * C + 1 + noise  # arbitrary function
+    X = [A, B, C]
+    X = np.asarray(X).reshape(-1, 3)
+    Y = Y.reshape(-1, 1)
+    return X, Y
+
+
 class Regression(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, batch_size, num_layers=1, bidiectional=False):
         super(Regression, self).__init__()
@@ -70,22 +87,23 @@ class Model:
         self.filename = "LSTM_hidden_dim-{}-num_layers-{}-dir-".format(hidden_dim, num_layers, bidirectional)
 
     def train(self, train_iter, test_iter, reuse_model=False):
-        # model = LSTMRegression(input_dim=self.input_dim,
-        #                        hidden_dim=self.hidden_dim,
-        #                        batch_size=self.batch_size,
-        #                        num_layers=self.num_layers,
-        #                        output_dim=1,
-        #                        bidiectional=self.bidirectional)
-        #
+        model = LSTMRegression(input_dim=self.input_dim,
+                               hidden_dim=self.hidden_dim,
+                               batch_size=self.batch_size,
+                               num_layers=self.num_layers,
+                               output_dim=1,
+                               bidiectional=self.bidirectional)
+
+        # Not good.
         # model = FCRegression(input_dim=self.input_dim,
         #                      batch_size=self.batch_size)
 
-        model = Regression(input_dim=self.input_dim,
-                           hidden_dim=self.hidden_dim,
-                           output_dim=1,
-                           batch_size=self.batch_size,
-                           num_layers=self.num_layers,
-                           bidiectional=self.bidirectional)
+        # model = Regression(input_dim=self.input_dim,
+        #                    hidden_dim=self.hidden_dim,
+        #                    output_dim=1,
+        #                    batch_size=self.batch_size,
+        #                    num_layers=self.num_layers,
+        #                    bidiectional=self.bidirectional)
 
         if reuse_model:
             if os.path.exists(self.filename):
@@ -151,19 +169,20 @@ class Model:
 if __name__ == '__main__':
     # Parameters of the model
     # You can change any of the parameters and expect the network to run without error
-    num_layers = 1
-    bidirectional = False
+    num_layers = 2
+    bidirectional = True
     hidden_dim = 512  # 512 worked best so far
     batch_size = 64
-    learning_rate = 0.0001  # 0.05 results in nan
+    learning_rate = 0.001  # 0.05 results in nan
 
     # X, Y = generate_data(batch_size * 8, 1)
+    X, Y = generate_multi_attr_data(batch_size * 64, 1)
 
     # Worst convergence after using Plain encoding.
-    # Sine encoding :
-    fname = "data/AEP_hourly.csv"
-    datareader = DataReader(fname, encoding='Sine', sample_size=batch_size * 124)
-    X, Y = datareader.get_data()
+    # Sine encoding : Losses converge till a certain context
+    # fname = "data/AEP_hourly.csv"
+    # datareader = DataReader(fname, encoding='Cosine', sample_size=batch_size * 124)
+    # X, Y = datareader.get_data()
 
     input_dim = len(X[0])
     print("Input dim : ", input_dim)

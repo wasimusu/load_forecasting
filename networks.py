@@ -32,16 +32,19 @@ class LSTMRegression(nn.Module):
 
         # relu works better than sigmoid
         # sigmoid promotes a monotonous values in prediction and results in more oscillation while training
-        x = F.sigmoid(x)
+        x = F.relu(x)
         x = self.linear(x)
         return x
 
     def initHidden(self):
-        return (torch.zeros(self.num_directions * self.num_layers, 1, self.hidden_dim),
-                torch.zeros(self.num_directions * self.num_layers, 1, self.hidden_dim))
+        return (torch.zeros(self.num_directions * self.num_layers, self.batch_size, self.hidden_dim),
+                torch.zeros(self.num_directions * self.num_layers, self.batch_size, self.hidden_dim))
 
 
 class FCRegression(nn.Module):
+    """
+    This produces same value for all the inputs to reduce MSE.
+    """
     def __init__(self, input_dim, batch_size):
         super(FCRegression, self).__init__()
 

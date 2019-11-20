@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.svm import SVR
+from sklearn.svm import SVR, LinearSVR
 from datareader import DataReader
 import sklearn
 
@@ -17,7 +17,7 @@ class SVRRegression:
         self.kernel_type = kernel_type
 
         # Different variants of SVR
-        self.svr_poly = SVR(kernel='poly', C=1e3, degree=3)
+        self.svr_poly = LinearSVR(epsilon=0.1)
         self.svr_lin = SVR(kernel='linear', C=100, gamma='auto')
         self.svr_rbf = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=.1)
 
@@ -48,9 +48,9 @@ if __name__ == '__main__':
     svm_poly = SVRRegression(kernel_type='poly')
     error_poly = svm_poly.fit_predict(X, Y)
 
-    svm_rbf = SVRRegression(kernel_type='rbf')
-    error_rbf = svm_rbf.fit_predict(X, Y)
+    # svm_rbf = SVRRegression(kernel_type='rbf')
+    # error_rbf = svm_rbf.fit_predict(X, Y)
 
     # print(error_lin)
     print(error_poly)
-    print(error_rbf)
+    # print(error_rbf)

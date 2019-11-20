@@ -74,9 +74,6 @@ for epoch in range(num_epoch):
     inputs, labels = generate_data(N=batch_size, sigma=1)
     inputs = torch.tensor(inputs).reshape(-1, 1).float().unsqueeze(0)
     labels = torch.tensor(labels).reshape(-1, 1).float()
-    print(inputs.size(), labels.size())
-    print(model)
-    break
     output = model(inputs)
 
     model.zero_grad()
@@ -93,7 +90,7 @@ for epoch in range(num_epoch):
 
         with torch.no_grad():
             outputs = model(inputs)
-            inputs = torch.tensor([input]).reshape(-1, 1).float().unsqueeze(0)
+            inputs = torch.tensor(inputs).reshape(-1, 1).float().unsqueeze(0)
             outputs = np.round(outputs.view(1, -1).detach().numpy(), 2)
             print(np.round(input[:8], 2), '\n',
                   np.round(labels[:8], 2), '\n', outputs[:8], '\n\n')
