@@ -41,6 +41,43 @@ class LSTMRegression(nn.Module):
                 torch.zeros(self.num_directions * self.num_layers, self.batch_size, self.hidden_dim))
 
 
+class GRURegression(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim, batch_size, num_layers=1, bidiectional=False):
+        super(GRURegression, self).__init__()
+
+        # RNN Parameters
+        self.num_layers = num_layers
+        self.num_directions = 2 if bidiectional else 1
+        self.hidden_dim = hidden_dim
+        self.batch_size = batch_size
+
+        # Can try other variants of the RNN as well.
+        self.features = nn.GRU(input_dim, hidden_dim, bidirectional=bidiectional, num_layers=num_layers)
+        self.linear = nn.Linear(hidden_dim * self.num_directions, output_dim)
+
+        self.linear = nn.Sequential(
+            nn.Linear(hidden_dim * self.num_directions, 256),
+            nn.Sigmoid(),
+            nn.Linear(256, output_dim),
+            nn.Sigmoid(),
+        )
+
+        self.hidden = self.initHidden()
+
+    def forward(self, x):
+        """ Take x in degrees """
+        x, self.hidden = self.features(x, self.hidden)
+
+        # relu works better than sigmoid
+        # sigmoid promotes a monotonous values in prediction and results in more oscillation while training
+        x = F.relu(x)
+        x = self.linear(x)
+        return x
+
+    def initHidden(self):
+        return torch.zeros(self.num_directions * self.num_layers, self.batch_size, self.hidden_dim)
+
+
 class FCRegression(nn.Module):
     """
     This produces same value for all the inputs to reduce MSE.

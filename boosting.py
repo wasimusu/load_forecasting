@@ -42,11 +42,11 @@ def boostedRegressor(X, Y):
 
     param = {
         'eta': 0.25,
-        'max_depth': 10,
+        'max_depth': 40,
         'objective': 'reg:squarederror',
     }
 
-    steps = 200  # The number of training iterations
+    steps = 100  # The number of training iterations
 
     model = xgb.train(param, D_train, steps)
 
@@ -77,8 +77,8 @@ if __name__ == '__main__':
     from datareader import DataReader
 
     fname = "data/EKPC_hourly.csv"
-    # datareader = DataReader(fname, encoding='Plain', sample_size=8500) # Works
-    datareader = DataReader(fname, encoding='Plain', sample_size=8500)
+    # datareader = DataReader(fname, encoding='Plain', sample_size=8500) # works
+    datareader = DataReader(fname, encoding='Pair', sample_size=10000)  # works
     X, Y = datareader.get_data()
 
     print(X.shape)

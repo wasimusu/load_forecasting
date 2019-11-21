@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-from networks import LSTMRegression, FCRegression
+from networks import LSTMRegression, FCRegression, GRURegression
 from datareader import DataReader
 from datasets import RegressionDataset
 from sklearn.model_selection import train_test_split
@@ -46,36 +46,6 @@ def generate_multi_attr_data(N, sigma):
     return X, Y
 
 
-class Regression(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim, batch_size, num_layers=1, bidiectional=False):
-        super(Regression, self).__init__()
-
-        # RNN Parameters
-        self.num_layers = num_layers
-        self.num_directions = 2 if bidiectional else 1
-        self.hidden_dim = hidden_dim
-        self.batch_size = batch_size
-
-        self.features = nn.LSTM(input_dim, hidden_dim, bidirectional=bidiectional, num_layers=num_layers)
-        self.linear = nn.Linear(hidden_dim * self.num_directions, output_dim)
-
-        self.hidden = self.initHidden()
-
-    def forward(self, x):
-        """
-        :param x: (sequence_length, batch_size, num_features).
-        num_features = num_input_attributes
-        """
-        x, self.hidden = self.features(x, self.hidden)
-        x = F.relu(x)
-        x = self.linear(x)
-        return x
-
-    def initHidden(self):
-        return (torch.zeros(self.num_directions * self.num_layers, self.batch_size, self.hidden_dim),
-                torch.zeros(self.num_directions * self.num_layers, self.batch_size, self.hidden_dim))
-
-
 class Model:
     def __init__(self, input_dim=1, num_layers=1, bidirectional=False, hidden_dim=512, batch_size=8, lr=0.005):
         self.lr = lr
@@ -87,7 +57,7 @@ class Model:
         self.filename = "LSTM_hidden_dim-{}-num_layers-{}-dir-".format(hidden_dim, num_layers, bidirectional)
 
     def train(self, train_iter, test_iter, reuse_model=False):
-        model = LSTMRegression(input_dim=self.input_dim,
+        model = GRURegression(input_dim=self.input_dim,
                                hidden_dim=self.hidden_dim,
                                batch_size=self.batch_size,
                                num_layers=self.num_layers,
@@ -97,13 +67,6 @@ class Model:
         # Not good.
         # model = FCRegression(input_dim=self.input_dim,
         #                      batch_size=self.batch_size)
-
-        # model = Regression(input_dim=self.input_dim,
-        #                    hidden_dim=self.hidden_dim,
-        #                    output_dim=1,
-        #                    batch_size=self.batch_size,
-        #                    num_layers=self.num_layers,
-        #                    bidiectional=self.bidirectional)
 
         if reuse_model:
             if os.path.exists(self.filename):
@@ -169,20 +132,20 @@ class Model:
 if __name__ == '__main__':
     # Parameters of the model
     # You can change any of the parameters and expect the network to run without error
-    num_layers = 2
+    num_layers = 1
     bidirectional = True
     hidden_dim = 512  # 512 worked best so far
-    batch_size = 64
-    learning_rate = 0.001  # 0.05 results in nan
+    batch_size = 128
+    learning_rate = 0.001  # 0.05 results in nan for GRU
 
     # X, Y = generate_data(batch_size * 8, 1)
-    X, Y = generate_multi_attr_data(batch_size * 64, 1)
+    # X, Y = generate_multi_attr_data(batch_size * 64, 1)
 
     # Worst convergence after using Plain encoding.
     # Sine encoding : Losses converge till a certain context
-    # fname = "data/AEP_hourly.csv"
-    # datareader = DataReader(fname, encoding='Cosine', sample_size=batch_size * 124)
-    # X, Y = datareader.get_data()
+    fname = "data/EKPC_hourly.csv"
+    datareader = DataReader(fname, encoding='Sine', sample_size=batch_size * 124)
+    X, Y = datareader.get_data()
 
     input_dim = len(X[0])
     print("Input dim : ", input_dim)

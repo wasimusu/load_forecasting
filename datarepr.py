@@ -28,6 +28,7 @@ class DataRepresentation:
 
 
 def repr_date(date, type='Pair'):
+    strdate = date  # String representation of date
     date = parser.parse(date)
     year = date.year
     month = date.month
@@ -43,8 +44,8 @@ def repr_date(date, type='Pair'):
         func = math.cos
 
     elif type == 'Pair':
-        sa, sb, sc, d = repr_date(date, 'Sine')
-        ca, cb, cc, _ = repr_date(date, 'Cosine')
+        sa, sb, sc, d = repr_date(strdate, 'Sine')
+        ca, cb, cc, _ = repr_date(strdate, 'Cosine')
         return [sa, ca, sb, cb, sc, cc, d]
 
     elif type == "Plain":

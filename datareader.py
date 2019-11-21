@@ -53,7 +53,7 @@ class DataReader:
 
 if __name__ == '__main__':
     fname = "data/AEP_hourly.csv"
-    datareader = DataReader(fname)
+    datareader = DataReader(fname, encoding='Pair')
     for i in range(len(datareader)):
         X, Y = datareader.__next__()
         print(i, X.shape, Y.shape)
