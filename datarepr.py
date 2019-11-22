@@ -1,7 +1,10 @@
 import math
 import numpy as np
-import datetime as dt
+import holidays
 from dateutil import parser
+import datetime as dt
+
+us_holidays = holidays.UnitedStates()
 
 
 class DataRepresentation:
@@ -34,6 +37,7 @@ def repr_date(date, type='Pair'):
     month = date.month
     day = date.day
     hour = date.hour
+    is_holiday = 1 if us_holidays.get(key=dt.datetime(year, month, day)) else 0
 
     # Sine representation
     if type == 'Sine':
@@ -44,12 +48,12 @@ def repr_date(date, type='Pair'):
         func = math.cos
 
     elif type == 'Pair':
-        sa, sb, sc, d = repr_date(strdate, 'Sine')
-        ca, cb, cc, _ = repr_date(strdate, 'Cosine')
-        return [sa, ca, sb, cb, sc, cc, d]
+        sa, sb, sc, d, is_holiday = repr_date(strdate, 'Sine')
+        ca, cb, cc, _, _ = repr_date(strdate, 'Cosine')
+        return [sa, ca, sb, cb, sc, cc, d, is_holiday]
 
     elif type == "Plain":
-        return [year, month, day, hour]
+        return [year, month, day, hour, is_holiday]
 
     else:
         raise ValueError("Supported representations : Sine, Cosine, Pair. Input : {}".format(type))
@@ -58,7 +62,7 @@ def repr_date(date, type='Pair'):
     day = DataRepresentation.repr_day(day, func)
     hour = DataRepresentation.repr_hour(hour, func)
 
-    return [year, month, day, hour]
+    return [year, month, day, hour, is_holiday]
 
 
 if __name__ == '__main__':

@@ -1,2 +1,3 @@
 xgboost
 statsmodels
+holidays

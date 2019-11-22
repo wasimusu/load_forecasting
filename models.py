@@ -57,12 +57,12 @@ class Model:
         self.filename = "LSTM_hidden_dim-{}-num_layers-{}-dir-".format(hidden_dim, num_layers, bidirectional)
 
     def train(self, train_iter, test_iter, reuse_model=False):
-        model = GRURegression(input_dim=self.input_dim,
-                               hidden_dim=self.hidden_dim,
-                               batch_size=self.batch_size,
-                               num_layers=self.num_layers,
-                               output_dim=1,
-                               bidiectional=self.bidirectional)
+        model = LSTMRegression(input_dim=self.input_dim,
+                              hidden_dim=self.hidden_dim,
+                              batch_size=self.batch_size,
+                              num_layers=self.num_layers,
+                              output_dim=1,
+                              bidiectional=self.bidirectional)
 
         # Not good.
         # model = FCRegression(input_dim=self.input_dim,
@@ -88,6 +88,7 @@ class Model:
         for epoch in range(num_epoch):
             epoch_loss = 0
             for i, [inputs, labels] in enumerate(train_iter):
+                if inputs.shape[0] != self.batch_size: continue
                 inputs = torch.tensor(inputs).float().reshape(1, self.batch_size, -1)
                 labels = torch.tensor(labels).float().reshape(-1, 1)
                 output = model(inputs)
@@ -109,6 +110,7 @@ class Model:
     def compute_loss(self, dataiter, model, criterion):
         epoch_loss = 0
         for i, [inputs, labels] in enumerate(dataiter):
+            if inputs.shape[0] != self.batch_size: continue
             inputs = torch.tensor(inputs).float().reshape(1, self.batch_size, -1)
             labels = torch.tensor(labels).float().reshape(-1, 1)
             output = model(inputs)
@@ -117,7 +119,7 @@ class Model:
             epoch_loss += loss.item()
 
             # Print epoch loss and do manual evalutation
-            if i == len(dataiter) - 1:
+            if i == len(dataiter) - 2:
                 print("Epoch Loss : {}".format("%.2f" % epoch_loss))
                 with torch.no_grad():
                     output = model(inputs)[:8]
@@ -133,18 +135,18 @@ if __name__ == '__main__':
     # Parameters of the model
     # You can change any of the parameters and expect the network to run without error
     num_layers = 1
-    bidirectional = True
+    bidirectional = False
     hidden_dim = 512  # 512 worked best so far
     batch_size = 128
-    learning_rate = 0.001  # 0.05 results in nan for GRU
+    learning_rate = 0.01  # 0.05 results in nan for GRU
 
     # X, Y = generate_data(batch_size * 8, 1)
     # X, Y = generate_multi_attr_data(batch_size * 64, 1)
 
     # Worst convergence after using Plain encoding.
     # Sine encoding : Losses converge till a certain context
-    fname = "data/EKPC_hourly.csv"
-    datareader = DataReader(fname, encoding='Sine', sample_size=batch_size * 124)
+    fname = "data/EKPC_daily.csv"
+    datareader = DataReader(fname, encoding='Sine', batch_size=batch_size, sample_size=batch_size * 124)
     X, Y = datareader.get_data()
 
     input_dim = len(X[0])

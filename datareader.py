@@ -29,6 +29,11 @@ class DataReader:
 
         self.num_batches = len(self.Y) // self.batch_size
 
+        # Trim data that can't be fit into batches
+        total = self.num_batches * self.batch_size
+        self.X = self.X[:total]
+        self.Y = self.Y[:total]
+
     def get_data(self):
         # returns datetime and power usage.
         # have to represent datetime using lots of cosines/sines/plain values
@@ -42,9 +47,8 @@ class DataReader:
         self.iter_count += 1
 
         # Start over again
-        if self.iter_count + 1 == self.num_batches:
+        if self.iter_count + 1 == self.num_batches or end - start < self.batch_size:
             self.iter_count = 0
-
         return self.X[start:end], self.Y[start:end]
 
     def __len__(self):
