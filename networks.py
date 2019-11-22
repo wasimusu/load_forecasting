@@ -102,5 +102,44 @@ class FCRegression(nn.Module):
         return x
 
 
+class LSTMAutoencoder(nn.Module):
+    """
+    Adapted from https://towardsdatascience.com/time-series-in-python-part-3-forecasting-taxi-trips-with-lstms-277afd4f811
+    Paper reference : https://arxiv.org/pdf/1709.01907.pdf titled "Deep and Confident Prediction for Time Series at Uber"
+    """
+    def __init__(self, config):
+        super(LSTMAutoencoder, self).__init__()
+        self.hidden_size = 128
+        self.bi = 1
+        self.lstm = nn.LSTM(config.get('features'), self.hidden_size, 1, dropout=0.1, bidirectional=self.bi - 1, batch_first=True)
+        self.lstm2 = nn.LSTM(self.hidden_size, self.hidden_size // 4, 1, dropout=0.1, bidirectional=self.bi - 1, batch_first=True)
+        self.dense = nn.Linear(self.hidden_size // 4, config.get('forecast_horizon'))
+        self.loss_fn = nn.MSELoss()
+        self.batch_size = config.get('batch_size')
+
+    def forward(self, x):
+        hidden = self.init_hidden()
+        output, _ = self.lstm(x, hidden)
+        output = F.dropout(output, p=0.5, training=True)
+        state = self.init_hidden2()
+        output, state = self.lstm2(output, state)
+        output = F.dropout(output, p=0.5, training=True)
+        output = self.dense(state[0].squeeze(0)) # Why is it using state but not output
+        return output
+
+    def init_hidden(self):
+        h0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size))
+        c0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size))
+        return h0, c0
+
+    def init_hidden2(self):
+        h0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size // 4))
+        c0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size // 4))
+        return h0, c0
+
+    def loss(self, pred, truth):
+        return self.loss_fn(pred, truth)
+
+
 if __name__ == '__main__':
     pass

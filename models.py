@@ -138,7 +138,7 @@ if __name__ == '__main__':
     bidirectional = False
     hidden_dim = 512  # 512 worked best so far
     batch_size = 128
-    learning_rate = 0.01  # 0.05 results in nan for GRU
+    learning_rate = 0.001  # 0.05 results in nan for GRU
 
     # X, Y = generate_data(batch_size * 8, 1)
     # X, Y = generate_multi_attr_data(batch_size * 64, 1)
@@ -146,7 +146,7 @@ if __name__ == '__main__':
     # Worst convergence after using Plain encoding.
     # Sine encoding : Losses converge till a certain context
     fname = "data/EKPC_daily.csv"
-    datareader = DataReader(fname, encoding='Sine', batch_size=batch_size, sample_size=batch_size * 124)
+    datareader = DataReader(fname, encoding='Plain', batch_size=batch_size, sample_size=-1)
     X, Y = datareader.get_data()
 
     input_dim = len(X[0])
