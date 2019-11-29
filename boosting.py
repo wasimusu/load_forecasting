@@ -13,7 +13,7 @@ def boostedRegressor(X, Y):
 
     param = {
         'eta': 0.25,
-        'max_depth': 40,
+        'max_depth': 10,
         'objective': 'reg:squarederror',
     }
 
@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     from datareader import DataReader
 
-    fname = "data/EKPC_hourly.csv"
+    fname = "data/temp.csv"
     datareader = DataReader(fname, encoding='Plain', sample_size=8500) # works
     # datareader = DataReader(fname, encoding='Pair', sample_size=10000)  # works
     X, Y = datareader.get_data()

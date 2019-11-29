@@ -107,27 +107,91 @@ class LSTMAutoencoder(nn.Module):
     Adapted from https://towardsdatascience.com/time-series-in-python-part-3-forecasting-taxi-trips-with-lstms-277afd4f811
     Paper reference : https://arxiv.org/pdf/1709.01907.pdf titled "Deep and Confident Prediction for Time Series at Uber"
     """
+
     def __init__(self, config):
         super(LSTMAutoencoder, self).__init__()
         self.hidden_size = 128
-        self.bi = 1
-        self.lstm = nn.LSTM(config.get('features'), self.hidden_size, 1, dropout=0.1, bidirectional=self.bi - 1, batch_first=True)
-        self.lstm2 = nn.LSTM(self.hidden_size, self.hidden_size // 4, 1, dropout=0.1, bidirectional=self.bi - 1, batch_first=True)
+        self.bi = False
+        self.lstm1 = nn.LSTM(config.get('features'), self.hidden_size, 1, dropout=0.1, bidirectional=self.bi,
+                             batch_first=True)
+        self.lstm2 = nn.LSTM(self.hidden_size, self.hidden_size // 4, 1, dropout=0.1, bidirectional=self.bi,
+                             batch_first=True)
         self.dense = nn.Linear(self.hidden_size // 4, config.get('forecast_horizon'))
         self.loss_fn = nn.MSELoss()
         self.batch_size = config.get('batch_size')
 
     def forward(self, x):
-        hidden = self.init_hidden()
-        output, _ = self.lstm(x, hidden)
+        # Encoder
+        hidden = self.init_hidden1()
+        output, _ = self.lstm1(x, hidden)
         output = F.dropout(output, p=0.5, training=True)
+
+        # Decoder
         state = self.init_hidden2()
         output, state = self.lstm2(output, state)
-        output = F.dropout(output, p=0.5, training=True)
-        output = self.dense(state[0].squeeze(0)) # Why is it using state but not output
+        output = F.dropout(output, p=0.5, training=True)  # This should act as the output of Autoencoder
+
+        # Numerical Predictor
+        output = self.dense(state[0].squeeze(0))  # Why is it using state but not output. Output of first encoder ?
+
         return output
 
-    def init_hidden(self):
+    def init_hidden1(self):
+        h0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size))
+        c0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size))
+        return h0, c0
+
+    def init_hidden2(self):
+        h0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size // 4))
+        c0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size // 4))
+        return h0, c0
+
+    def loss(self, pred, truth):
+        return self.loss_fn(pred, truth)
+
+
+class Autoencoder(nn.Module):
+    """
+    Adapted from https://towardsdatascience.com/time-series-in-python-part-3-forecasting-taxi-trips-with-lstms-277afd4f811
+    Paper reference : https://arxiv.org/pdf/1709.01907.pdf titled "Deep and Confident Prediction for Time Series at Uber"
+    """
+
+    def __init__(self, input_size=1, batch_size=128, dropout=0.5):
+        super(Autoencoder, self).__init__()
+        self.hidden_size = 128
+        self.bi = False
+
+        self.encoder = nn.LSTM(input_size=input_size,
+                               hidden_size=self.hidden_size,
+                               num_layers=1, dropout=0.1,
+                               bidirectional=self.bi,
+                               batch_first=True)
+
+        self.decoder = nn.LSTM(input_size=self.hidden_size,
+                               hidden_size=self.hidden_size // 4,
+                               num_layers=1,
+                               dropout=0.1,
+                               bidirectional=self.bi,
+                               batch_first=True)
+
+        self.dropout = dropout
+        self.batch_size = batch_size
+        self.loss_fn = nn.MSELoss()
+
+    def forward(self, x):
+        # Encoder
+        hidden = self.init_hidden1()
+        output, _ = self.encoder(x, hidden)
+        output = F.dropout(output, p=self.dropout, training=True)
+
+        # Decoder
+        state = self.init_hidden2()
+        output, state = self.decoder(output, state)
+        output = F.dropout(output, p=self.dropout, training=True)
+
+        return output
+
+    def init_hidden1(self):
         h0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size))
         c0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size))
         return h0, c0

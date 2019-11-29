@@ -56,7 +56,7 @@ class DataReader:
 
 
 if __name__ == '__main__':
-    fname = "data/AEP_hourly.csv"
+    fname = "data/temp.csv"
     datareader = DataReader(fname, encoding='Pair')
     for i in range(len(datareader)):
         X, Y = datareader.__next__()
