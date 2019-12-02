@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.svm import SVR, LinearSVR
 from datareader import DataReader
 import sklearn
+import matplotlib.pyplot as plt
 
 
 def generate_data(N, sigma):
@@ -34,13 +35,24 @@ class SVRRegression:
         self.svr = self.svr.fit(trainX, trainY)
         y_pred = self.svr.predict(testX)
         error = np.sum(np.square(y_pred - testY)) / testY.shape[0]
+
+        plt.title("Scatter plot between actual and predicted Y")
+        plt.xlabel("Actual Y (Actual load)")
+        plt.ylabel("Predicted Y (Predicted load)")
+        plt.scatter(testY, y_pred)
+        plt.show()
+
         return error
 
 
 if __name__ == '__main__':
-    fname = "data/AEP_hourly.csv"
+    fname = "data/temp.csv"
     datareader = DataReader(fname)
     X, Y = datareader.get_data()
+    step = 1
+    X = np.asarray(Y[:-step][:200000]).reshape(-1, 1)
+    Y = Y[step:][:200000]
+    print(Y[-10:])
 
     # svm_lin = SVRRegression(kernel_type='linear')
     # error_lin = svm_lin.fit_predict(X, Y)

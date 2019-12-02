@@ -1,8 +1,8 @@
 from sklearn.model_selection import train_test_split
-from sklearn import datasets
 import xgboost as xgb
 import numpy as np
 import matplotlib.pyplot as plt
+from datareader import DataReader
 
 
 def boostedRegressor(X, Y):
@@ -37,12 +37,13 @@ if __name__ == '__main__':
     # X = data.data
     # Y = data.target
 
-    from datareader import DataReader
-
-    fname = "data/temp.csv"
-    datareader = DataReader(fname, encoding='Plain', sample_size=8500) # works
-    # datareader = DataReader(fname, encoding='Pair', sample_size=10000)  # works
+    fname = "data/AEP_daily.csv"
+    datareader = DataReader(fname, encoding='Plain', sample_size=20000)  # works
     X, Y = datareader.get_data()
 
-    # boostedClassifier(X, Y)
+    step = 1
+    X = np.asarray(Y[:-step]).reshape(-1, 1)
+    Y = Y[step:]
+    print(X.shape, Y.shape)
+
     boostedRegressor(X, Y)
