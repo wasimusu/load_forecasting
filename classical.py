@@ -33,13 +33,19 @@ class SVRRegression:
     def fit_predict(self, X, Y, split=0.25):
         trainX, testX, trainY, testY = sklearn.model_selection.train_test_split(X, Y, test_size=split, shuffle=False)
         self.svr = self.svr.fit(trainX, trainY)
-        y_pred = self.svr.predict(testX)
-        error = np.sum(np.square(y_pred - testY)) / testY.shape[0]
+        preds = self.svr.predict(testX)
+        error = np.sum(np.square(preds - testY)) / testY.shape[0]
 
         plt.title("Scatter plot between actual and predicted Y")
         plt.xlabel("Actual Y (Actual load)")
         plt.ylabel("Predicted Y (Predicted load)")
-        plt.scatter(testY, y_pred)
+        plt.scatter(testY, preds)
+        plt.show()
+
+        plt.title("Y and pred Y over time")
+        plt.plot(list(range(len(preds))), testY, label='Actual Load')
+        plt.plot(list(range(len(preds))), preds, label='Predicted Load')
+        plt.legend()
         plt.show()
 
         return error

@@ -16,14 +16,13 @@ def boostedRegressor(X, Y):
         'max_depth': 10,
         'objective': 'reg:squarederror',
     }
-
     steps = 100  # The number of training iterations
 
     model = xgb.train(param, D_train, steps)
 
     preds = model.predict(D_test)
-    print(testY[:10])
-    print(np.round(preds[:10], 2))
+    print("Y:\t\t", testY[:10])
+    print("Pred Y : ", np.round(preds[:10], 2))
 
     plt.title("Scatter plot between actual and predicted Y")
     plt.xlabel("Actual Y (Actual load)")
@@ -31,13 +30,15 @@ def boostedRegressor(X, Y):
     plt.scatter(testY, preds)
     plt.show()
 
+    plt.title("Y and pred Y over time")
+    plt.plot(list(range(len(preds))), testY, label='Actual Load')
+    plt.plot(list(range(len(preds))), preds, label='Predicted Load')
+    plt.legend()
+    plt.show()
+
 
 if __name__ == '__main__':
-    # data = datasets.load_digits()
-    # X = data.data
-    # Y = data.target
-
-    fname = "data/AEP_daily.csv"
+    fname = "data/EKPC_hourly.csv"
     datareader = DataReader(fname, encoding='Plain', sample_size=20000)  # works
     X, Y = datareader.get_data()
 
