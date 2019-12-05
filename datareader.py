@@ -5,6 +5,24 @@ import numpy as np
 import datetime
 
 
+def window(X, N):
+    """
+    Convert input data X into groups on N sliding items
+    >>> Y = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    >>> window_size = 5
+    >>> features, labels = window(X, window_size)
+
+    feature,    label
+    [1 2 3 4 5] 6
+    [2 3 4 5 6] 7
+    [3 4 5 6 7] 8
+    [4 5 6 7 8] 9
+    [5 6 7 8 9] 10
+    """
+    output = [X[i:i + N] for i in range(len(X) - N)]
+    return np.asarray(output).reshape(-1, N), X[N:]
+
+
 class DataReader:
     def __init__(self, fname, batch_size=8, encoding='Plain', sample_size=64 * 40):
         """
@@ -24,7 +42,7 @@ class DataReader:
         X = self.df[self.df.columns[0]]
         self.Y = np.asarray(self.df[self.df.columns[1]][:N], dtype=np.float)
 
-        X = [repr_date(date, type=encoding) for date in X[:N]]
+        X = [repr_date(date, type=encoding)[-3:] for date in X[:N]]
         self.X = np.asarray(X)
 
         self.num_batches = len(self.Y) // self.batch_size
@@ -56,7 +74,7 @@ class DataReader:
 
 
 if __name__ == '__main__':
-    fname = "data/temp.csv"
+    fname = "data/household.csv"
     datareader = DataReader(fname, encoding='Pair')
     for i in range(len(datareader)):
         X, Y = datareader.__next__()

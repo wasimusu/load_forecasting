@@ -38,6 +38,8 @@ def repr_date(date, type='Pair'):
     day = date.day
     hour = date.hour
     is_holiday = 1 if us_holidays.get(key=dt.datetime(year, month, day)) else 0
+    dayofweek = date.isoweekday()
+    is_weekday = 1 if dayofweek in [6, 7] else 0
 
     # Sine representation
     if type == 'Sine':
@@ -50,10 +52,10 @@ def repr_date(date, type='Pair'):
     elif type == 'Pair':
         sa, sb, sc, d, is_holiday = repr_date(strdate, 'Sine')
         ca, cb, cc, _, _ = repr_date(strdate, 'Cosine')
-        return [sa, ca, sb, cb, sc, cc, d, is_holiday]
+        return [sa, ca, sb, cb, sc, cc, d, is_holiday, dayofweek, is_weekday]
 
     elif type == "Plain":
-        return [year, month, day, hour, is_holiday]
+        return [year, month, day, hour, is_holiday, dayofweek, is_weekday]
 
     else:
         raise ValueError("Supported representations : Sine, Cosine, Pair. Input : {}".format(type))
@@ -62,7 +64,7 @@ def repr_date(date, type='Pair'):
     day = DataRepresentation.repr_day(day, func)
     hour = DataRepresentation.repr_hour(hour, func)
 
-    return [year, month, day, hour, is_holiday]
+    return [year, month, day, hour, is_holiday, dayofweek, is_weekday]
 
 
 if __name__ == '__main__':

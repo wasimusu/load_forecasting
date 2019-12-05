@@ -1,9 +1,10 @@
 import numpy as np
 from sklearn.svm import SVR, LinearSVR
-from datareader import DataReader
+from datareader import DataReader, window
 import sklearn
 import matplotlib.pyplot as plt
 import os
+
 
 def generate_data(N, sigma):
     """ Generate data with given number of points N and sigma """
@@ -52,22 +53,21 @@ class SVRRegression:
 
 
 if __name__ == '__main__':
-    fname = "data/AEP_daily.csv"
+    fname = "data/household.csv"  # Works for household. Boosting does not.
     location = os.path.split(fname)[1].split(".")[0]
     datareader = DataReader(fname, sample_size=200000)
-    X, Y = datareader.get_data()
+    features, Y = datareader.get_data()
 
-    # Process data.
-    step = 1
-    X = np.asarray(Y[:-step][:200000]).reshape(-1, 1)
-    Y = Y[step:][:200000]
+    window_size = 21
+    # 7 does not predict higher extreme values
+    # 28 does not predict lower extreme values
+
+    features = features[:-window_size]
+    X, Y = window(Y, window_size)
+    X = np.concatenate((X, features), axis=1)
+    print(features.shape, X.shape, Y.shape, X[0], Y[0])
 
     svm_poly = SVRRegression(kernel_type='poly')
-    error_poly = svm_poly.fit_predict(X, Y, location)
+    loss = svm_poly.fit_predict(X, Y, location)
 
-    # svm_rbf = SVRRegression(kernel_type='rbf')
-    # error_rbf = svm_rbf.fit_predict(X, Y, location)
-
-    # print(error_lin)
-    print(error_poly)
-    # print(error_rbf)
+    print("Loss : ", "%.2f" % loss)
