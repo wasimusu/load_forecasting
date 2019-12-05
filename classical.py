@@ -3,7 +3,7 @@ from sklearn.svm import SVR, LinearSVR
 from datareader import DataReader
 import sklearn
 import matplotlib.pyplot as plt
-
+import os
 
 def generate_data(N, sigma):
     """ Generate data with given number of points N and sigma """
@@ -30,19 +30,19 @@ class SVRRegression:
 
         self.svr = self.svr_dict[kernel_type]
 
-    def fit_predict(self, X, Y, split=0.25):
+    def fit_predict(self, X, Y, location, split=0.25):
         trainX, testX, trainY, testY = sklearn.model_selection.train_test_split(X, Y, test_size=split, shuffle=False)
         self.svr = self.svr.fit(trainX, trainY)
         preds = self.svr.predict(testX)
         error = np.sum(np.square(preds - testY)) / testY.shape[0]
 
-        plt.title("Scatter plot between actual and predicted Y")
+        plt.title("Scatterplot between actual & predicted Y - {} - {}".format(location, "SVR_" + self.kernel_type))
         plt.xlabel("Actual Y (Actual load)")
         plt.ylabel("Predicted Y (Predicted load)")
         plt.scatter(testY, preds)
         plt.show()
 
-        plt.title("Y and pred Y over time")
+        plt.title("Y and pred Y over time - {} - {}".format(location, "SVR_" + self.kernel_type))
         plt.plot(list(range(len(preds))), testY, label='Actual Load')
         plt.plot(list(range(len(preds))), preds, label='Predicted Load')
         plt.legend()
@@ -52,22 +52,21 @@ class SVRRegression:
 
 
 if __name__ == '__main__':
-    fname = "data/temp.csv"
-    datareader = DataReader(fname)
+    fname = "data/AEP_daily.csv"
+    location = os.path.split(fname)[1].split(".")[0]
+    datareader = DataReader(fname, sample_size=200000)
     X, Y = datareader.get_data()
+
+    # Process data.
     step = 1
     X = np.asarray(Y[:-step][:200000]).reshape(-1, 1)
     Y = Y[step:][:200000]
-    print(Y[-10:])
-
-    # svm_lin = SVRRegression(kernel_type='linear')
-    # error_lin = svm_lin.fit_predict(X, Y)
 
     svm_poly = SVRRegression(kernel_type='poly')
-    error_poly = svm_poly.fit_predict(X, Y)
+    error_poly = svm_poly.fit_predict(X, Y, location)
 
     # svm_rbf = SVRRegression(kernel_type='rbf')
-    # error_rbf = svm_rbf.fit_predict(X, Y)
+    # error_rbf = svm_rbf.fit_predict(X, Y, location)
 
     # print(error_lin)
     print(error_poly)

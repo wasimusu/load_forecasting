@@ -3,9 +3,10 @@ import xgboost as xgb
 import numpy as np
 import matplotlib.pyplot as plt
 from datareader import DataReader
+import os
 
 
-def boostedRegressor(X, Y):
+def boostedRegressor(X, Y, location):
     trainX, testX, trainY, testY = train_test_split(X, Y, test_size=0.2, shuffle=False)
 
     D_train = xgb.DMatrix(trainX, label=trainY)
@@ -24,13 +25,13 @@ def boostedRegressor(X, Y):
     print("Y:\t\t", testY[:10])
     print("Pred Y : ", np.round(preds[:10], 2))
 
-    plt.title("Scatter plot between actual and predicted Y")
+    plt.title("Scatter plot between actual and predicted Y - {} - boosting".format(location))
     plt.xlabel("Actual Y (Actual load)")
     plt.ylabel("Predicted Y (Predicted load)")
     plt.scatter(testY, preds)
     plt.show()
 
-    plt.title("Y and pred Y over time")
+    plt.title("Y and pred Y over time - {} - boosting".format(location))
     plt.plot(list(range(len(preds))), testY, label='Actual Load')
     plt.plot(list(range(len(preds))), preds, label='Predicted Load')
     plt.legend()
@@ -38,13 +39,17 @@ def boostedRegressor(X, Y):
 
 
 if __name__ == '__main__':
-    fname = "data/EKPC_hourly.csv"
+    fname = "data/household.csv"
     datareader = DataReader(fname, encoding='Plain', sample_size=20000)  # works
     X, Y = datareader.get_data()
+
+    # X = [(X[i][-1], Y[i]) for i in range(len(X) - step)]
+    # X = np.asarray(X).reshape(-1, 2)
 
     step = 1
     X = np.asarray(Y[:-step]).reshape(-1, 1)
     Y = Y[step:]
     print(X.shape, Y.shape)
 
-    boostedRegressor(X, Y)
+    location = os.path.split(fname)[1].split(".")[0]
+    boostedRegressor(X, Y, location)
