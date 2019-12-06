@@ -7,7 +7,7 @@ import os
 
 
 def boostedRegressor(X, Y, location, window_size):
-    trainX, testX, trainY, testY = train_test_split(X, Y, test_size=0.2, shuffle=False)
+    trainX, testX, trainY, testY = train_test_split(X, Y, test_size=0.25, shuffle=False)
 
     D_train = xgb.DMatrix(trainX, label=trainY)
     D_test = xgb.DMatrix(testX, label=testY)
@@ -26,13 +26,13 @@ def boostedRegressor(X, Y, location, window_size):
     print("Pred Y : ", np.round(preds[:10], 2))
 
     plt.title(
-        "Scatterplot between actual & predicted load : {} - boosting - {} days ahead".format(location, window_size))
-    plt.xlabel("Actual Y (Actual load)")
-    plt.ylabel("Predicted Y (Predicted load)")
+        "Actual vs Predicted Load : {} - boosting. Window size {}".format(location, window_size))
+    plt.xlabel("Actual Load)")
+    plt.ylabel("Predicted Load")
     plt.scatter(testY, preds)
     plt.show()
 
-    plt.title("Actual & predicted load : {} - boosting - {} days ahead".format(location, window_size))
+    plt.title("Actual & predicted load : {} - boosting. Window size {}".format(location, window_size))
     plt.plot(list(range(len(preds))), testY, label='Actual Load')
     plt.plot(list(range(len(preds))), preds, label='Predicted Load')
     plt.legend()
@@ -40,8 +40,8 @@ def boostedRegressor(X, Y, location, window_size):
 
 
 if __name__ == '__main__':
-    fname = "data/AEP_daily.csv"
-    datareader = DataReader(fname, encoding='Plain', sample_size=20000)  # works
+    fname = "data/household.csv"
+    datareader = DataReader(fname, encoding='Plain', sample_size=200000)  # works
     features, Y = datareader.get_data()
 
     window_size = 7

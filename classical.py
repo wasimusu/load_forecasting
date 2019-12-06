@@ -37,13 +37,13 @@ class SVRRegression:
         preds = self.svr.predict(testX)
         error = np.sum(np.square(preds - testY)) / testY.shape[0]
 
-        plt.title("Scatterplot between actual & predicted Y - {} - {} - {} days ahead".format(location, "SVR_" + self.kernel_type, window_size))
-        plt.xlabel("Actual Y (Actual load)")
-        plt.ylabel("Predicted Y (Predicted load)")
+        plt.title("Actual vs Predicted Load ({}) - {} Window size {}".format(location, "SVR_" + self.kernel_type, window_size))
+        plt.xlabel("Actual load)")
+        plt.ylabel("Predicted load)")
         plt.scatter(testY, preds)
         plt.show()
 
-        plt.title("Lineplot between actul load & predicted load over time - {} - {} - {} days ahead".format(location, "SVR_" + self.kernel_type, window_size))
+        plt.title("Actul vs Predicted Load ({}) - {}  Window size {}".format(location, "SVR_" + self.kernel_type, window_size))
         plt.plot(list(range(len(preds))), testY, label='Actual Load')
         plt.plot(list(range(len(preds))), preds, label='Predicted Load')
         plt.legend()
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     datareader = DataReader(fname, sample_size=200000)
     features, Y = datareader.get_data()
 
-    window_size = 21
+    window_size = 28
     # 7 does not predict higher extreme values
     # 28 does not predict lower extreme values
 
