@@ -37,13 +37,13 @@ class SVRRegression:
         preds = self.svr.predict(testX)
         error = np.sum(np.square(preds - testY)) / testY.shape[0]
 
-        plt.title("Scatterplot between actual & predicted Y - {} - {}".format(location, "SVR_" + self.kernel_type))
+        plt.title("Scatterplot between actual & predicted Y - {} - {} - {} days ahead".format(location, "SVR_" + self.kernel_type, window_size))
         plt.xlabel("Actual Y (Actual load)")
         plt.ylabel("Predicted Y (Predicted load)")
         plt.scatter(testY, preds)
         plt.show()
 
-        plt.title("Y and pred Y over time - {} - {}".format(location, "SVR_" + self.kernel_type))
+        plt.title("Lineplot between actul load & predicted load over time - {} - {} - {} days ahead".format(location, "SVR_" + self.kernel_type, window_size))
         plt.plot(list(range(len(preds))), testY, label='Actual Load')
         plt.plot(list(range(len(preds))), preds, label='Predicted Load')
         plt.legend()

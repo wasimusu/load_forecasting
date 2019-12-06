@@ -40,7 +40,7 @@ def boostedRegressor(X, Y, location, window_size):
 
 
 if __name__ == '__main__':
-    fname = "data/household.csv"
+    fname = "data/AEP_daily.csv"
     datareader = DataReader(fname, encoding='Plain', sample_size=20000)  # works
     features, Y = datareader.get_data()
 
