@@ -1,3 +1,8 @@
 xgboost
 statsmodels
 holidays
+sklearn
+matplotlib
+numpy
+pandas
+holidays

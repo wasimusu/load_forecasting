@@ -35,7 +35,7 @@ class LSTMRegression(nn.Module):
         # sigmoid promotes a monotonous values in prediction and results in more oscillation while training
         x = F.relu(x)
         x = self.linear(x)
-        return x
+        return torch.squeeze(x)
 
     def initHidden(self):
         return (torch.zeros(self.num_directions * self.num_layers, self.batch_size, self.hidden_dim),
@@ -122,32 +122,17 @@ class LSTMAutoencoder(nn.Module):
 
     def forward(self, x):
         # Encoder
-        hidden = self.init_hidden1()
-        output, _ = self.lstm1(x, hidden)
+        output, _ = self.lstm1(x)
         output = F.dropout(output, p=0.5, training=True)
 
         # Decoder
-        state = self.init_hidden2()
-        output, state = self.lstm2(output, state)
+        output, state = self.lstm2(output)
         output = F.dropout(output, p=0.5, training=True)  # This should act as the output of Autoencoder
 
         # Numerical Predictor
         output = self.dense(state[0].squeeze(0))  # Why is it using state but not output. Output of first encoder ?
 
         return output
-
-    def init_hidden1(self):
-        h0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size))
-        c0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size))
-        return h0, c0
-
-    def init_hidden2(self):
-        h0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size // 4))
-        c0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size // 4))
-        return h0, c0
-
-    def loss(self, pred, truth):
-        return self.loss_fn(pred, truth)
 
 
 class Autoencoder(nn.Module):
@@ -180,29 +165,14 @@ class Autoencoder(nn.Module):
 
     def forward(self, x):
         # Encoder
-        hidden = self.init_hidden1()
-        output, _ = self.encoder(x, hidden)
+        output, _ = self.encoder(x)
         output = F.dropout(output, p=self.dropout, training=True)
 
         # Decoder
-        state = self.init_hidden2()
-        output, state = self.decoder(output, state)
+        output, state = self.decoder(output)
         output = F.dropout(output, p=self.dropout, training=True)
 
         return output
-
-    def init_hidden1(self):
-        h0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size))
-        c0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size))
-        return h0, c0
-
-    def init_hidden2(self):
-        h0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size // 4))
-        c0 = torch.Variable(torch.zeros(self.bi, self.batch_size, self.hidden_size // 4))
-        return h0, c0
-
-    def loss(self, pred, truth):
-        return self.loss_fn(pred, truth)
 
 
 if __name__ == '__main__':

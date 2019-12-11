@@ -44,7 +44,7 @@ class Autoencoder(nn.Module):
 
     def __init__(self, input_size=1, batch_size=128, dropout=0.5):
         super(Autoencoder, self).__init__()
-        self.hidden_size = 256
+        self.hidden_size = 512
         self.bi = False
         self.directions = 2 if self.bi else 1
         self.batch_size = batch_size
@@ -53,15 +53,15 @@ class Autoencoder(nn.Module):
         self.encoder = nn.LSTM(input_size=input_size,
                                hidden_size=self.hidden_size,
                                num_layers=self.encoder_layers,
-                               dropout=0.1,
+                               dropout=0.5,
                                bidirectional=self.bi,
                                batch_first=False)
 
         self.decoder_layers = 1
         self.decoder = nn.LSTM(input_size=self.hidden_size,
-                               hidden_size=self.hidden_size // 4,
+                               hidden_size=input_size,
                                num_layers=self.decoder_layers,
-                               dropout=0.1,
+                               dropout=0.25,
                                bidirectional=self.bi,
                                batch_first=False)
 
@@ -71,16 +71,17 @@ class Autoencoder(nn.Module):
 
     def forward(self, x):
         # Encoder
-        output, _ = self.encoder(x)
+        output, (last_hidden, _) = self.encoder(x)
         # output = F.dropout(output, p=self.dropout, training=True)
 
         # Decoder
-        output, state = self.decoder(output)
+        # last_hidden = F.relu(last_hidden)
+        output, state = self.decoder(last_hidden)
         # output = F.dropout(output, p=self.dropout, training=True)
 
         # Pass through the dense layer to get the x-hat.
         # output = F.sigmoid(output)
-        output = self.dense(state[0].squeeze(0))
+        # output = self.dense(state[0].squeeze(0))
 
         return output
 

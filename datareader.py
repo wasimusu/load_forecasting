@@ -42,7 +42,19 @@ class DataReader:
         X = self.df[self.df.columns[0]]
         self.Y = np.asarray(self.df[self.df.columns[1]][:N], dtype=np.float)
 
-        X = [repr_date(date, type=encoding)[-3:] for date in X[:N]]
+        nX = []
+        nY = []
+        for date, y in zip(X[:N], self.Y):
+            try:
+                nX.append(repr_date(date, type=encoding)[-3:])
+                nY.append(y)
+            except:
+                pass
+
+        X = nX
+        self.Y = np.asarray(nY, dtype=np.float)
+
+        # X = [repr_date(date, type=encoding)[-3:] for date in X[:N]]
         self.X = np.asarray(X)
 
         self.num_batches = len(self.Y) // self.batch_size

@@ -58,11 +58,11 @@ class Model:
 
     def train(self, train_iter, test_iter, reuse_model=False):
         model = LSTMRegression(input_dim=self.input_dim,
-                              hidden_dim=self.hidden_dim,
-                              batch_size=self.batch_size,
-                              num_layers=self.num_layers,
-                              output_dim=1,
-                              bidiectional=self.bidirectional)
+                               hidden_dim=self.hidden_dim,
+                               batch_size=self.batch_size,
+                               num_layers=self.num_layers,
+                               output_dim=1,
+                               bidiectional=self.bidirectional)
 
         # Not good.
         # model = FCRegression(input_dim=self.input_dim,
@@ -90,7 +90,7 @@ class Model:
             for i, [inputs, labels] in enumerate(train_iter):
                 if inputs.shape[0] != self.batch_size: continue
                 inputs = torch.tensor(inputs).float().reshape(1, self.batch_size, -1)
-                labels = torch.tensor(labels).float().reshape(-1, 1)
+                labels = torch.tensor(labels).float().reshape(-1)
                 output = model(inputs)
 
                 model.zero_grad()
@@ -112,7 +112,7 @@ class Model:
         for i, [inputs, labels] in enumerate(dataiter):
             if inputs.shape[0] != self.batch_size: continue
             inputs = torch.tensor(inputs).float().reshape(1, self.batch_size, -1)
-            labels = torch.tensor(labels).float().reshape(-1, 1)
+            labels = torch.tensor(labels).float().reshape(-1)
             output = model(inputs)
 
             loss = criterion(output, labels)
@@ -131,23 +131,13 @@ class Model:
         pass
 
 
-if __name__ == '__main__':
+def trainXY(X, Y, batch_size=128):
     # Parameters of the model
     # You can change any of the parameters and expect the network to run without error
     num_layers = 1
     bidirectional = False
     hidden_dim = 512  # 512 worked best so far
-    batch_size = 128
     learning_rate = 0.001  # 0.05 results in nan for GRU
-
-    # X, Y = generate_data(batch_size * 8, 1)
-    # X, Y = generate_multi_attr_data(batch_size * 64, 1)
-
-    # Worst convergence after using Plain encoding.
-    # Sine encoding : Losses converge till a certain context
-    fname = "data/EKPC_daily.csv"
-    datareader = DataReader(fname, encoding='Plain', batch_size=batch_size, sample_size=-1)
-    X, Y = datareader.get_data()
 
     input_dim = len(X[0])
     print("Input dim : ", input_dim)
@@ -168,3 +158,49 @@ if __name__ == '__main__':
                   lr=learning_rate)
 
     model.train(train_iter, test_iter, reuse_model=True)
+
+
+def trainNY(X, Y, batch_size=128):
+    """
+    Given N-1 y values, predict the yth value
+    """
+    X = Y[:-1]
+    Y = Y[1: ]
+
+    # Parameters of the model
+    # You can change any of the parameters and expect the network to run without error
+    num_layers = 1
+    bidirectional = False
+    hidden_dim = 512  # 512 worked best so far
+    learning_rate = 0.001  # 0.05 results in nan for GRU
+
+    input_dim = len(X[0])
+    print("Input dim : ", input_dim)
+    trainX, testX, trainY, testY = train_test_split(X, Y, test_size=0.25)
+    del X, Y
+
+    train_dataset = RegressionDataset(inputs=trainX, labels=trainY)
+    test_dataset = RegressionDataset(inputs=testX, labels=testY)
+
+    train_iter = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
+    test_iter = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
+    print("Batches : ", len(train_iter))
+    model = Model(input_dim=input_dim,
+                  num_layers=num_layers,
+                  bidirectional=bidirectional,
+                  hidden_dim=hidden_dim,
+                  batch_size=batch_size,
+                  lr=learning_rate)
+
+    model.train(train_iter, test_iter, reuse_model=True)
+
+
+if __name__ == '__main__':
+    # Worst convergence after using Plain encoding.
+    # Sine encoding : Losses converge till a certain context
+    fname = "data/EKPC_daily.csv"
+    batch_size = 128
+    datareader = DataReader(fname, encoding='Plain', batch_size=batch_size, sample_size=-1)
+    X, Y = datareader.get_data()
+
+    trainXY(X, Y, batch_size)

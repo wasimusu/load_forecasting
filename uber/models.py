@@ -71,7 +71,7 @@ class Model:
         print("Model : ", model)
         print("Batch size : ", self.batch_size)
         criterion = nn.MSELoss()
-        optimizer = optim.SGD(params=model.parameters(), lr=self.lr, momentum=0.0, weight_decay=0.00)
+        optimizer = optim.Adam(params=model.parameters(), lr=self.lr, weight_decay=0.00)
 
         # Training parameters
         num_epoch = 200
@@ -81,8 +81,8 @@ class Model:
             for i, [inputs, labels] in enumerate(train_iter):
                 if inputs.shape[0] != self.batch_size: continue
                 inputs = torch.tensor(inputs).float().reshape(1, self.batch_size, -1)
-                labels = torch.tensor(labels).float().reshape(-1, 1)
-                output = model(inputs)
+                labels = torch.tensor(labels).float().reshape(-1)
+                output = model(inputs).view(-1)
 
                 model.zero_grad()
                 loss = criterion(output, labels)
@@ -103,8 +103,8 @@ class Model:
         for i, [inputs, labels] in enumerate(dataiter):
             if inputs.shape[0] != self.batch_size: continue
             inputs = torch.tensor(inputs).float().reshape(1, self.batch_size, -1)
-            labels = torch.tensor(labels).float().reshape(-1, 1)
-            output = model(inputs)
+            labels = torch.tensor(labels).float().reshape(-1)
+            output = model(inputs).view(-1)
 
             loss = criterion(output, labels)
             epoch_loss += loss.item()

@@ -38,14 +38,16 @@ class SVRRegression:
         error = np.sum(np.square(preds - testY)) / testY.shape[0]
 
         plt.title("Actual vs Predicted Load ({}) - {} Window size {}".format(location, "SVR_" + self.kernel_type, window_size))
-        plt.xlabel("Actual load)")
-        plt.ylabel("Predicted load)")
+        plt.xlabel("Actual load")
+        plt.ylabel("Predicted load")
         plt.scatter(testY, preds)
         plt.show()
 
         plt.title("Actul vs Predicted Load ({}) - {}  Window size {}".format(location, "SVR_" + self.kernel_type, window_size))
         plt.plot(list(range(len(preds))), testY, label='Actual Load')
         plt.plot(list(range(len(preds))), preds, label='Predicted Load')
+        plt.xlabel('Time')
+        plt.ylabel('Power Consumption (MW)')
         plt.legend()
         plt.show()
 
@@ -55,17 +57,16 @@ class SVRRegression:
 if __name__ == '__main__':
     fname = "data/household.csv"  # Works for household. Boosting does not.
     location = os.path.split(fname)[1].split(".")[0]
-    datareader = DataReader(fname, sample_size=200000)
+    datareader = DataReader(fname, sample_size=10000, encoding='Cosine')
     features, Y = datareader.get_data()
 
-    window_size = 28
+    window_size = 7
     # 7 does not predict higher extreme values
     # 28 does not predict lower extreme values
 
     features = features[:-window_size]
     X, Y = window(Y, window_size)
     X = np.concatenate((X, features), axis=1)
-    print(features.shape, X.shape, Y.shape, X[0], Y[0])
 
     svm_poly = SVRRegression(kernel_type='poly')
     loss = svm_poly.fit_predict(X, Y, location)

@@ -31,6 +31,6 @@ def aggregate(fname, output_fname):
 
 
 if __name__ == '__main__':
-    fname = "data/EKPC_hourly.csv"
-    output_fname = "data/EKPC_daily.csv"
+    fname = "data/household_data.csv"
+    output_fname = "data/household_data_daily.csv"
     aggregate(fname, output_fname)

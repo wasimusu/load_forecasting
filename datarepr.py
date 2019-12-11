@@ -50,8 +50,8 @@ def repr_date(date, type='Pair'):
         func = math.cos
 
     elif type == 'Pair':
-        sa, sb, sc, d, is_holiday = repr_date(strdate, 'Sine')
-        ca, cb, cc, _, _ = repr_date(strdate, 'Cosine')
+        sa, sb, sc, d, is_holiday, _, _  = repr_date(strdate, 'Sine')
+        ca, cb, cc, _, _, _, _ = repr_date(strdate, 'Cosine')
         return [sa, ca, sb, cb, sc, cc, d, is_holiday, dayofweek, is_weekday]
 
     elif type == "Plain":
