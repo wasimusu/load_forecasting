@@ -75,3 +75,17 @@ pip3 install torch==1.3.1+cpu torchvision==0.4.2+cpu -f https://download.pytorch
 python models.py
 ```
 
+### Results
+![](https://github.com/wasimusu/load_forecasting/blob/master/Images/aep%20daily%20svr%20scatter.png)
+![](https://github.com/wasimusu/load_forecasting/blob/master/Images/aep%20daily%20svr%20line.png)
+### Summary
+In this case, classical methods outperformed neural networks while also simultaneously being easier to train, debug and explain. Using Sine, Cosine and Pair representation of dates also produced similar results. Even without explicit usage of date and time, the prediction preformed just as good meaning that dates were not as important in this case.
+
+### Conclusion
+SVR with polynomial kernel and Boosting (Random Forest) can be used to do load forecasting. Using windows of previous N-1 loads to augment the input features helps to significantly improve the prediction results. The size of window plays critical role in being able to accurately predict lower and higher extremes. 
+
+### Computational Study
+We have conducted a study comparing the performance of SVR on each dataset, AEP and Household for hourly prediction. In each case the model has been trained on the last 7 hours. Prediction on the  household data performs much better than the AEP data.
+
+![AEP hourly SVR](https://github.com/wasimusu/load_forecasting/blob/master/Images/compare%20dataset%201.png)
+![Household hourly SVR](https://github.com/wasimusu/load_forecasting/blob/master/Images/compare%20dataset%202.png)
