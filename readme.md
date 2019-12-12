@@ -3,12 +3,20 @@ The need to reduce the carbon footprint drastically over the next decade require
 
 ## Methods
 ### Classical Methods
-- Linear regression with regularization
-- Support Vector Regression
+- Random Forests using xgboost (https://github.com/wasimusu/load_forecasting/blob/master/boosting.py)
+```
+python boosting.py
+```
+
+- Support Vector Regression (https://github.com/wasimusu/load_forecasting/blob/master/svr.py)
+```
+python svr.py
+```
 
 ### Neural Network Methods
 - Linear regression using FC feedforward network
 - Linear regression using RNN variants (LSTM)
+- Autoencoders using LSTMs
 
 ## Dataset
 I. First Dataset :
@@ -26,3 +34,44 @@ It has total household power consumption with a 30 min interval  from 6031 resid
 - Building a model to predict energy consumption
 - Find trends in energy consumption around hours of the day, holidays, or long term trends.
 - Understand how daily trends change depending of the time of year.
+
+## Dependencies
+* python3.7
+* xgboost
+* statsmodels
+* holidays
+* sklearn
+* matplotlib
+* numpy
+* pandas
+* holidays
+
+## Installations
+```
+pip3 install -r requirements.txt
+```
+
+## Running exectuables
+* fname : filename of dataset. Change fname to change dataset. For each executable fname is inside the __main__.
+
+## Files explained
+#### All codes are work of the authors unless referred or cited.
+* datareader.py : Implements data reader
+* datarepr.py : Implements functions relating to data representation. Date can be represented as sin, cos, (sin, cos) pair or without any encoding.
+* utils.py : Implements timer to time performance of various functions
+* process.py : Implements data aggregator functions which aggregates hourly or so data into daily data.
+* networks.py : Implements different types of Neural Network Architectures.
+* models.py : Implements training module for above architectures.
+* \data : contains datasets containing hourly samples or hourly samples aggregated into daily samples.
+* uber\networks.py and uber\models.py : Similar to above networks.py and models.py
+
+### Requirements for Neural Networks
+* https://pytorch.org/
+```
+pip3 install torch==1.3.1+cpu torchvision==0.4.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
+```
+#### Running neural network models
+```
+python models.py
+```
+
