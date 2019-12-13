@@ -17,6 +17,7 @@ python svr.py
 - Linear regression using FC feedforward network
 - Linear regression using RNN variants (LSTM)
 - Autoencoders using LSTMs
+<img src="https://github.com/wasimusu/load_forecasting/blob/master/Images/lsmt-autoencoder.png" width="500">
 
 ## Dataset
 I. First Dataset :
@@ -54,6 +55,16 @@ pip3 install -r requirements.txt
 ## Running exectuables
 * fname : filename of dataset. Change fname to change dataset. For each executable fname is inside the __main__.
 
+### Requirements for Neural Networks
+* https://pytorch.org/
+```
+pip3 install torch==1.3.1+cpu torchvision==0.4.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
+```
+#### Running neural network models
+```
+python models.py
+```
+
 ## Files explained
 #### All codes are work of the authors unless referred or cited.
 * datareader.py : Implements data reader
@@ -65,22 +76,14 @@ pip3 install -r requirements.txt
 * \data : contains datasets containing hourly samples or hourly samples aggregated into daily samples.
 * uber\networks.py and uber\models.py : Similar to above networks.py and models.py
 
-### Requirements for Neural Networks
-* https://pytorch.org/
-```
-pip3 install torch==1.3.1+cpu torchvision==0.4.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
-```
-#### Running neural network models
-```
-python models.py
-```
-
 ### Results
 <img src="https://github.com/wasimusu/load_forecasting/blob/master/Images/aep%20daily%20svr%20scatter.png" width = "500">
 <img src="https://github.com/wasimusu/load_forecasting/blob/master/Images/aep%20daily%20svr%20line.png" width ="500">
                                                                                                                    
 ### Summary
 In this case, classical methods outperformed neural networks while also simultaneously being easier to train, debug and explain. Using Sine, Cosine and Pair representation of dates also produced similar results. Even without explicit usage of date and time, the prediction preformed just as good meaning that dates were not as important in this case.
+
+Window sizeis the number of past power usage data/samples used to augment feature to predict power usage. Making the window size too small or too large causes the predictor to miss upper or lower extremes.
 
 ### Conclusion
 SVR with polynomial kernel and Boosting (Random Forest) can be used to do load forecasting. Using windows of previous N-1 loads to augment the input features helps to significantly improve the prediction results. The size of window plays critical role in being able to accurately predict lower and higher extremes. 
