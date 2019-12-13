@@ -88,5 +88,5 @@ SVR with polynomial kernel and Boosting (Random Forest) can be used to do load f
 ### Computational Study
 We have conducted a study comparing the performance of SVR on each dataset, AEP and Household for hourly prediction. In each case the model has been trained on the last 7 hours. Prediction on the  household data performs much better than the AEP data.
 
-<img src="https://github.com/wasimusu/load_forecasting/blob/master/Images/compare%20dataset%201.png width = "500">
-<img src="https://github.com/wasimusu/load_forecasting/blob/master/Images/compare%20dataset%202.png width = "500">
+<img src="https://github.com/wasimusu/load_forecasting/blob/master/Images/compare%20dataset%201.png" width = "500">
+<img src="https://github.com/wasimusu/load_forecasting/blob/master/Images/compare%20dataset%202.png" width = "500">
